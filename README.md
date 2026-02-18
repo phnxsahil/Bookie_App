@@ -1,54 +1,58 @@
-# Intelligent Vault: AI-Powered Research Tracker
+<div align="center">
+  <img src="public/assets/logo.png" alt="Bookie logo" width="96" />
+  <h2>Bookie — Smart Bookmark App</h2>
+  <p>Smart bookmarking with Google OAuth, realtime updates, and a focused, minimal UI.</p>
+  <p>
+    <a href="https://github.com/phnxsahil/Bookie_App">Repo</a>
+    ·
+    <a href="TODO">Live Demo</a>
+  </p>
+</div>
 
-A professional, minimal bookmark manager that uses **Gemini AI** to automatically summarize and categorize your saved links in real-time. Built for the Abstrabit Technologies Micro-Challenge.
+Bookie is my take on a smart bookmarking app. The name comes from “Bake your Bookie” — baking links into organized, useful knowledge. I designed the logo and kept the product name consistent through the UI.
 
-## 🚀 Key Features
+## Requirements
+1. Google OAuth only (no email/password).
+2. Add bookmark (URL + title).
+3. Per‑user privacy (User A cannot see User B’s bookmarks).
+4. Realtime updates across tabs.
+5. Delete own bookmarks.
+6. Deployed on Vercel.
 
-- **Google OAuth**: Secure, seamless sign-in.
-- **AI Enrichment**: Every link is automatically analyzed by Gemini to generate a concise summary and category tag.
-- **Real-time Sync**: Instant updates across all open tabs using Supabase Realtime (INSERT/UPDATE/DELETE).
-- **Hardened Privacy**: Database-level security via Row Level Security (RLS) policies.
-- **Premium UI**: Minimalist, high-performance interface built with Tailwind CSS.
+## Tech Stack
+- Next.js (App Router)
+- Supabase (Auth, Database, Realtime)
+- Tailwind CSS
 
-## 🛠️ Infrastructure
+## Live URL
+- TODO: add Vercel URL
 
-- **Frontend**: Next.js 15 (App Router)
-- **Database**: Supabase (PostgreSQL)
-- **AI Engine**: Google Gemini API
-- **Real-time**: Supabase Broadcast & DB Listeners
-- **Auth**: Supabase Googl OAuth
+## Repo
+- https://github.com/phnxsahil/Bookie_App.git
 
-## 🧠 Problem Solving Journey
+## Problems & Fixes
+- **Gemini integration**
+- Approach: start with a minimal health check and a pinned model to keep the surface area small.
+- Issue: model 404s after key rotation (`gemini-1.5-flash` not available in `v1beta`).
+- Fix: add a short model fallback list plus optional `GEMINI_MODEL`, then verify via the health check.
 
-### The Challenge: Seamless AI UX
-Integrating an AI LLM into a real-time application often creates "loading anxiety" for users. If I waited for the AI to finish before showing the bookmark, the app would feel slow.
+- **Realtime consistency**
+- Approach: rely on Supabase Realtime for cross‑tab updates.
+- Issue: inserts/updates occasionally missed across tabs.
+- Fix: enable `replica identity full`, confirm `bookmarks` in `supabase_realtime`, and add client refetch on focus with a 10s safety poll.
 
-### The Solution: "Optimistic Enrichment"
-I implemented a dual-flow system:
-1. **Instant UI**: When a user saves a link, it is immediately inserted into the database and reflected in the UI via Realtime subscriptions.
-2. **Background Enrichment**: After the insertion, the frontend triggers a headless API route (`/api/ai/enrich`). The UI displays an "Enriching..." animation while the AI works. Once the database is updated with the AI's results, a secondary Realtime **UPDATE** event refreshes the specific card with the new summary and category—no page refresh needed.
+- **Auth refresh stability**
+- Approach: use Supabase SSR helpers for sessions.
+- Issue: stale cookies triggered `refresh_token_not_found` in middleware.
+- Fix: clear auth cookies on refresh failure and continue unauthenticated.
 
-## 🛠️ Setup Instructions
+- **Input validation**
+- Approach: enrich bookmarks via API calls.
+- Issue: non‑UUID test ids caused DB errors.
+- Fix: enforce UUID guards at the API boundary and service layer before DB writes.
 
-1. **Clone & Install**:
-   ```bash
-   npm install
-   ```
-2. **Environment Configuration**:
-   Create a `.env.local` file with:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://kgmaudrexzjyswhcwlgn.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_KEY
-   GEMINI_API_KEY=YOUR_GEMINI_KEY
-   GEMINI_MODEL=gemini-2.0-flash
-   ```
-3. **Database Setup**:
-   Run the SQL provided in `supabase/schema.sql` within your Supabase SQL Editor.
-4. **Run Dev**:
-   ```bash
-   npm run dev
-   ```
-
-## 📚 Deep Dive
-
-For detailed architecture diagrams, interview Q&A, and technical implementation details, see [docs/DEEP_DIVE.md](file:///d:/Projects/abstractcompany/docs/DEEP_DIVE.md).
+## Local Dev
+```bash
+npm install
+npm run dev
+```
