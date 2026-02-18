@@ -106,7 +106,6 @@ export default function Dashboard({ userId }: DashboardProps) {
     const [addError, setAddError] = useState<string | null>(null);
     const [prefs, setPrefs] = useState<DashboardPrefs>(DEFAULT_PREFS);
     const [prefsLoaded, setPrefsLoaded] = useState(false);
-    const [channelReady, setChannelReady] = useState(false);
 
     const supabase = useMemo(() => createClient(), []);
 
@@ -340,13 +339,6 @@ export default function Dashboard({ userId }: DashboardProps) {
                     }
                 }
             )
-            .on("status", (status) => {
-                if (status === "SUBSCRIBED") setChannelReady(true);
-                if (status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-                    setChannelReady(false);
-                    void fetchBookmarks();
-                }
-            })
             .subscribe();
 
         return () => {
