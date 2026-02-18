@@ -5,7 +5,7 @@
   <p>
     <a href="https://github.com/phnxsahil/Bookie_App">Repo</a>
     ·
-    <a href="TODO">Live Demo</a>
+    <a href="https://bookieapp.vercel.app">Live Demo</a>
   </p>
 </div>
 
@@ -25,7 +25,7 @@ Bookie is my take on a smart bookmarking app. The name comes from “Bake your B
 - Tailwind CSS
 
 ## Live URL
-- TODO: add Vercel URL
+- https://bookieapp.vercel.app
 
 ## Repo
 - https://github.com/phnxsahil/Bookie_App.git
