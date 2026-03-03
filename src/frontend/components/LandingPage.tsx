@@ -2,19 +2,12 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { createClient } from "@/backend/database/browser";
-import { useMemo } from "react";
 
 export default function LandingPage() {
-    const supabase = useMemo(() => createClient(), []);
-
-    const handleLogin = async () => {
-        await supabase.auth.signInWithOAuth({
-            provider: "google",
-            options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
-            },
-        });
+    // Uses our custom relay (/api/auth/google) which avoids the
+    // kgmaudrexzjyswhcwlgn.supabase.co redirect that Jio DNS-blocks.
+    const handleLogin = () => {
+        window.location.href = "/api/auth/google";
     };
 
     return (
