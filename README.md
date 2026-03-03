@@ -9,12 +9,12 @@
   </p>
 </div>
 
-Bookie is my take on a smart bookmarking app. The name comes from “Bake your Bookie” — baking links into organized, useful knowledge. I designed the logo and kept the product name consistent through the UI.
+Bookie is my take on a smart bookmarking app. The name comes from "Bake your Bookie" — baking links into organized, useful knowledge. I designed the logo and kept the product name consistent through the UI.
 
 ## Requirements
 1. Google OAuth only (no email/password).
 2. Add bookmark (URL + title).
-3. Per‑user privacy (User A cannot see User B’s bookmarks).
+3. Per‑user privacy (User A cannot see User B's bookmarks).
 4. Realtime updates across tabs.
 5. Delete own bookmarks.
 6. Deployed on Vercel.
@@ -23,12 +23,29 @@ Bookie is my take on a smart bookmarking app. The name comes from “Bake your B
 - Next.js (App Router)
 - Supabase (Auth, Database, Realtime)
 - Tailwind CSS
+- [JioBase](https://github.com/sunithvs/jiobase) — Cloudflare reverse proxy to bypass Indian ISP DNS blocks on `*.supabase.co`
 
 ## Live URL
 - https://bookieapp.vercel.app
 
 ## Repo
 - https://github.com/phnxsahil/Bookie_App.git
+
+## Environment Variables
+```env
+NEXT_PUBLIC_SUPABASE_URL=       # JioBase proxy URL (e.g. https://your-slug.jiobase.com)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=  # Supabase anon key (unchanged)
+GEMINI_API_KEY=                 # Google Gemini API key
+GEMINI_MODEL=gemini-2.0-flash   # Optional — falls back to flash/flash-lite
+GOOGLE_CLIENT_ID=               # Google OAuth 2.0 client ID
+GOOGLE_CLIENT_SECRET=           # Google OAuth 2.0 client secret
+```
+
+## Local Dev
+```bash
+npm install
+npm run dev
+```
 
 ## Problems & Fixes
 - **Gemini integration**
@@ -51,8 +68,10 @@ Bookie is my take on a smart bookmarking app. The name comes from “Bake your B
 - Issue: non‑UUID test ids caused DB errors.
 - Fix: enforce UUID guards at the API boundary and service layer before DB writes.
 
-## Local Dev
-```bash
-npm install
-npm run dev
-```
+- **Indian ISP DNS block (`*.supabase.co`)**
+- Issue: Jio/Airtel DNS-poison all `*.supabase.co` subdomains (since Feb 2026), breaking Auth, DB, and Realtime for Indian users.
+- Approach: route all Supabase traffic through [JioBase](https://github.com/sunithvs/jiobase), a free Cloudflare Workers reverse proxy. Change `NEXT_PUBLIC_SUPABASE_URL` to your JioBase slug — everything else stays the same.
+- Remaining issue: Supabase's built-in `signInWithOAuth()` hardcodes `*.supabase.co` as the Google OAuth `redirect_uri`, so Google still redirected the user's browser to the blocked domain.
+- Fix: replaced `signInWithOAuth()` with a custom two-route relay:
+  - `GET /api/auth/google` — builds the Google OAuth URL with our own `redirect_uri`, redirects the user.
+  - `GET /api/auth/google/callback` — receives the code from Google, exchanges it directly with `oauth2.googleapis.com` (never blocked), then calls `supabase.auth.signInWithIdToken()` which routes through JioBase. No `*.supabase.co` URL ever reaches the user's browser.
